@@ -26,9 +26,9 @@ checking_status = {
 # USE EXISTING SESSION GLOBALS
 persistent_driver = None
 session_logged_in = False
-# Use existing session path - no new QR scan needed!
-PROFILE_PATH = r"C:\WhatsAppSmartSession\Profile"
-SESSION_FILE = r"C:\WhatsAppSmartSession\session_status.json"
+# Use temporary directory for production (Linux)
+PROFILE_PATH = "/tmp/whatsapp_session/Profile"
+SESSION_FILE = "/tmp/whatsapp_session/session_status.json"
 
 def ensure_directories():
     """Ensure the profile directory exists"""
