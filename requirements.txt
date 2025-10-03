@@ -1,0 +1,7 @@
+selenium
+django
+pandas
+flask
+openpyxl
+gunicorn
+python-decouple

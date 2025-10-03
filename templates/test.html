@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Django AJAX Test</title>
+</head>
+<body>
+    <h1>Django AJAX Test</h1>
+    <form id="test-form">
+        <input type="text" id="test-number" value="+916362945154" placeholder="Phone number">
+        <button type="submit">Test Check</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded');
+            
+            document.getElementById('test-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('Form submitted - prevented default');
+                
+                const number = document.getElementById('test-number').value;
+                const resultDiv = document.getElementById('result');
+                
+                resultDiv.innerHTML = 'Testing...';
+                
+                try {
+                    console.log('Making request to /api/check-single/');
+                    
+                    const response = await fetch('/api/check-single/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ number: number })
+                    });
+                    
+                    console.log('Response received:', response.status);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Data:', data);
+                        resultDiv.innerHTML = 'Result: ' + JSON.stringify(data);
+                    } else {
+                        const errorText = await response.text();
+                        console.log('Error response:', errorText);
+                        resultDiv.innerHTML = 'Error: ' + errorText;
+                    }
+                } catch (error) {
+                    console.error('Request failed:', error);
+                    resultDiv.innerHTML = 'Request failed: ' + error.message;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

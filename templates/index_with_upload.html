@@ -1,0 +1,541 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Checker - File Upload</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            background: #25D366;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .btn {
+            width: 100%;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn:hover { background: #128C7E; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .file-upload {
+            border: 2px dashed #25D366;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload:hover { background: #f0f0f0; }
+        .file-upload.dragover { 
+            background: #e8f5e8;
+            border-color: #128C7E;
+        }
+        .file-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 5px;
+            display: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+        .result.success { background: #e8f5e8; color: #2e7d32; }
+        .result.error { background: #ffebee; color: #c62828; }
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #25D366, #128C7E);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .batch-results {
+            margin-top: 20px;
+            display: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .batch-results table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .batch-results th,
+        .batch-results td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .batch-results th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .status-registered {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .status-not-registered {
+            color: #c62828;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> WhatsApp Checker</h1>
+            <p>Django Backend - FAST Single & Batch Checking with File Upload </p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('single')">Single Number</button>
+            <button class="tab" onclick="switchTab('batch')">Batch Check</button>
+            <button class="tab" onclick="switchTab('upload')">File Upload</button>
+        </div>
+
+        <!-- Single Number Tab -->
+        <div id="single-tab" class="tab-content active">
+            <div class="form-group">
+                <label for="phone-number">Phone Number</label>
+                <input type="text" id="phone-number" class="form-control" 
+                       placeholder="Enter phone number (e.g., +916362945154)" value="+916362945154">
+            </div>
+            
+            <button id="check-btn" class="btn">CHECK REGISTRATION</button>
+            
+            <div id="single-result" class="result"></div>
+        </div>
+
+        <!-- Batch Check Tab -->
+        <div id="batch-tab" class="tab-content">
+            <div class="form-group">
+                <label for="batch-numbers">Phone Numbers (one per line)</label>
+                <textarea id="batch-numbers" class="form-control textarea" 
+                          placeholder="Enter multiple phone numbers, one per line ( FAST MODE):
++916362945154
++919876543210
++917890123456
++918123456789
++919123456789
++917777777777
++918888888888"></textarea>
+            </div>
+            
+            <button id="batch-btn" class="btn">CHECK ALL NUMBERS</button>
+            
+            <div id="batch-progress" class="progress">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div id="progress-text" class="progress-text">Processing...</div>
+            </div>
+            
+            <div id="batch-results" class="batch-results">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- File Upload Tab -->
+        <div id="upload-tab" class="tab-content">
+            <div class="form-group">
+                <label>Upload Phone Numbers File</label>
+                <div class="file-upload" id="file-upload">
+                    <div>
+                        <h3> Drop file here or click to browse</h3>
+                        <p>Supported formats: .txt, .csv</p>
+                        <p>Max file size: 5MB</p>
+                        <input type="file" id="file-input" accept=".txt,.csv" style="display: none;">
+                    </div>
+                </div>
+                <div class="file-info" id="file-info"></div>
+            </div>
+            
+            <button id="upload-check-btn" class="btn" disabled>CHECK UPLOADED NUMBERS</button>
+            
+            <div id="upload-progress" class="progress">
+                <div class="progress-bar">
+                    <div id="upload-progress-fill" class="progress-fill"></div>
+                </div>
+                <div id="upload-progress-text" class="progress-text">Processing...</div>
+            </div>
+            
+            <div id="upload-results" class="batch-results">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upload-results-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('WhatsApp Checker with File Upload loaded');
+        
+        let uploadedNumbers = [];
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // File upload functionality
+        const fileUpload = document.getElementById('file-upload');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const uploadCheckBtn = document.getElementById('upload-check-btn');
+
+        fileUpload.addEventListener('click', () => fileInput.click());
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        async function handleFileSelect(file) {
+            console.log('File selected:', file.name);
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large (max 5MB)');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                fileInfo.innerHTML = '<div> Uploading and processing file...</div>';
+                fileInfo.style.display = 'block';
+                
+                const response = await fetch('/api/upload-file/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    uploadedNumbers = data.numbers;
+                    fileInfo.innerHTML = 
+                        <div style="color: #2e7d32;">
+                             <br>
+                             File: <br>
+                             Numbers found: 
+                        </div>
+                    ;
+                    uploadCheckBtn.disabled = false;
+                    uploadCheckBtn.textContent = CHECK  NUMBERS;
+                } else {
+                    fileInfo.innerHTML = <div style="color: #c62828;"> </div>;
+                    uploadCheckBtn.disabled = true;
+                }
+                
+            } catch (error) {
+                console.error('File upload error:', error);
+                fileInfo.innerHTML = <div style="color: #c62828;"> Upload failed: </div>;
+                uploadCheckBtn.disabled = true;
+            }
+        }
+
+        // Single number check (existing code)
+        document.getElementById('check-btn').addEventListener('click', async function() {
+            console.log('Single check button clicked');
+            
+            const phoneInput = document.getElementById('phone-number');
+            const checkBtn = document.getElementById('check-btn');
+            const resultDiv = document.getElementById('single-result');
+            
+            const number = phoneInput.value.trim();
+            
+            if (!number) {
+                showSingleResult('Please enter a phone number', 'error');
+                return;
+            }
+            
+            // Show loading state
+            checkBtn.textContent = 'Checking...';
+            checkBtn.disabled = true;
+            resultDiv.style.display = 'none';
+            
+            console.log('Making request for number:', number);
+            
+            try {
+                const response = await fetch('/api/check-single/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ number: number })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Response data:', data);
+                    
+                    const status = data.registered ? 'REGISTERED' : 'NOT REGISTERED';
+                    const statusClass = data.registered ? 'success' : 'error';
+                    const emoji = data.registered ? '' : '';
+                    
+                    showSingleResult(${emoji}  is  on WhatsApp, statusClass);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showSingleResult(Error: , 'error');
+                }
+                
+            } catch (error) {
+                console.error('Request failed:', error);
+                showSingleResult(Request failed: , 'error');
+            } finally {
+                // Reset button
+                checkBtn.textContent = 'CHECK REGISTRATION';
+                checkBtn.disabled = false;
+            }
+        });
+
+        // Upload numbers check
+        document.getElementById('upload-check-btn').addEventListener('click', async function() {
+            if (uploadedNumbers.length === 0) {
+                alert('No numbers uploaded');
+                return;
+            }
+            
+            console.log('Checking uploaded numbers:', uploadedNumbers.length);
+            
+            const uploadCheckBtn = document.getElementById('upload-check-btn');
+            const progressDiv = document.getElementById('upload-progress');
+            const resultsDiv = document.getElementById('upload-results');
+            const resultsBody = document.getElementById('upload-results-body');
+            
+            // Show loading state
+            uploadCheckBtn.textContent = Processing  numbers...;
+            uploadCheckBtn.disabled = true;
+            progressDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            resultsBody.innerHTML = '';
+            
+            try {
+                // Start batch processing
+                const response = await fetch('/api/check-batch/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ numbers: uploadedNumbers })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(HTTP );
+                }
+                
+                // Poll for progress
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const statusResponse = await fetch('/api/status/');
+                        const statusData = await statusResponse.json();
+                        
+                        console.log('Upload status update:', statusData);
+                        
+                        // Update progress bar
+                        const progress = statusData.total > 0 ? (statusData.progress / statusData.total) * 100 : 0;
+                        document.getElementById('upload-progress-fill').style.width = progress + '%';
+                        document.getElementById('upload-progress-text').textContent = 
+                            Processing / numbers...;
+                        
+                        // Add new results
+                        statusData.results.forEach((result, index) => {
+                            const existingRow = document.getElementById(upload-result-);
+                            if (!existingRow) {
+                                const row = document.createElement('tr');
+                                row.id = upload-result-;
+                                
+                                const timestamp = new Date().toLocaleTimeString();
+                                const status = result.registered ? 'REGISTERED' : 'NOT REGISTERED';
+                                const statusClass = result.registered ? 'status-registered' : 'status-not-registered';
+                                
+                                row.innerHTML = 
+                                    <td></td>
+                                    <td class=""></td>
+                                    <td></td>
+                                ;
+                                
+                                resultsBody.appendChild(row);
+                            }
+                        });
+                        
+                        // Show results table if we have results
+                        if (statusData.results.length > 0) {
+                            resultsDiv.style.display = 'block';
+                        }
+                        
+                        // Check if completed
+                        if (!statusData.running) {
+                            clearInterval(pollInterval);
+                            
+                            // Final update
+                            document.getElementById('upload-progress-fill').style.width = '100%';
+                            document.getElementById('upload-progress-text').textContent = 
+                                 Completed  numbers;
+                            
+                            // Reset button
+                            uploadCheckBtn.textContent = CHECK  NUMBERS;
+                            uploadCheckBtn.disabled = false;
+                            
+                            console.log('Upload batch processing completed');
+                        }
+                    } catch (error) {
+                        console.error('Upload status poll failed:', error);
+                        clearInterval(pollInterval);
+                        
+                        // Reset button
+                        uploadCheckBtn.textContent = CHECK  NUMBERS;
+                        uploadCheckBtn.disabled = false;
+                    }
+                }, 1500); // Poll every 1.5 seconds
+                
+            } catch (error) {
+                console.error('Upload batch request failed:', error);
+                alert('Failed to start batch processing: ' + error.message);
+                
+                // Reset button
+                uploadCheckBtn.textContent = CHECK  NUMBERS;
+                uploadCheckBtn.disabled = false;
+                progressDiv.style.display = 'none';
+            }
+        });
+        
+        function showSingleResult(message, type) {
+            const resultDiv = document.getElementById('single-result');
+            resultDiv.textContent = message;
+            resultDiv.className = esult ;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
