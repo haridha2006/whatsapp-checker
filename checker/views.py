@@ -93,10 +93,17 @@ def create_chrome_driver():
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
         
-        # Find Chrome
+        # Find Chrome (cross-platform)
         chrome_paths = [
+            # Windows
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+            # Linux (Heroku, Ubuntu, etc.)
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium-browser",
+            "/app/.apt/usr/bin/google-chrome",  # Heroku buildpack path
+            "/app/.apt/usr/bin/chromium-browser"
         ]
         
         chrome_path = None
