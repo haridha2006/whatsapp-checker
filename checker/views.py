@@ -109,25 +109,20 @@ def create_chrome_driver():
             print(f" [BROWSER]  Chrome not found!")
             return None
         
-        print(f" [BROWSER]  Opening Chrome with EXISTING session (no QR needed)...")
+        print(f" [BROWSER]  Opening Chrome in headless mode for production...")
         
-        # Use existing session Chrome options
+        # Production-ready Chrome options
         chrome_options = Options()
         chrome_options.binary_location = chrome_path
         
-        # Use existing profile - same as before
-        chrome_options.add_argument(f'--user-data-dir={PROFILE_PATH}')
-        chrome_options.add_argument('--profile-directory=WhatsAppSession')  # Same as before
-        
-        # Visible and optimized
-        chrome_options.add_argument('--window-size=1400,900')
-        chrome_options.add_argument('--window-position=50,50')
-        
-        # Enhanced settings for accuracy
+        # Headless mode for server deployment
+        chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_argument('--disable-web-security')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1920,1080')
         chrome_options.add_argument('--allow-running-insecure-content')
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
